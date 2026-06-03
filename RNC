@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RNC Mechanical — Lead Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b1622;
+  --bg2: #111e2e;
+  --bg3: #162638;
+  --border: #1e3248;
+  --border2: #243d5a;
+  --text: #e8f0f8;
+  --muted: #4e6a84;
+  --sub: #7a9ab8;
+  --orange: #f5821f;
+  --yellow: #f9b233;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --purple: #a78bfa;
+  --teal: #14b8a6;
+  --c-won: #22c55e;
+  --c-awaiting: #f5821f;
+  --c-scheduled: #f9b233;
+  --c-done: #14b8a6;
+  --c-unscheduled: #64748b;
+  --c-inhcp: #3b82f6;
+  --c-nothcp: #94a3b8;
+  --c-fu: #a78bfa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(180deg, #0d1a28 0%, var(--bg) 100%);
+  border-bottom: 2px solid var(--orange);
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header svg { flex-shrink: 0; }
+.htext h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; line-height: 1; color: #fff;
+}
+.htext h1 span { color: var(--orange); }
+.htext p { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+.hright { margin-left: auto; text-align: right; }
+.hright .rtitle { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--yellow); letter-spacing: 1px; }
+.hright .rdate { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+/* MONTH TABS */
+.month-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  background: var(--bg2);
+}
+.tab {
+  padding: 12px 28px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+  cursor: pointer; border-bottom: 3px solid transparent;
+  margin-bottom: -1px; transition: all 0.2s;
+}
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.tab:hover:not(.active) { color: var(--sub); }
+
+/* MONTH PANEL */
+.month-panel { display: none; }
+.month-panel.active { display: block; }
+
+/* MAIN */
+.main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+/* TOP STAT CARDS */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.scard {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.scard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: var(--sc-color, var(--orange));
+}
+.scard .sc-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+}
+.scard .sc-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px; font-weight: 800; line-height: 1;
+  color: var(--sc-color, var(--orange));
+}
+.scard .sc-sub { font-size: 11px; color: var(--sub); margin-top: 6px; }
+.scard .sc-badge {
+  display: inline-block; margin-top: 6px;
+  font-size: 10px; font-weight: 700; padding: 2px 10px;
+  border-radius: 20px; letter-spacing: 0.5px;
+  background: var(--sc-badge-bg, rgba(34,197,94,0.15));
+  color: var(--sc-badge-color, #4ade80);
+}
+
+/* PIPELINE BAR */
+.pipeline-section { margin-bottom: 28px; }
+.pipeline-section h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 14px;
+}
+.pipeline-bar {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 58px;
+  gap: 3px;
+}
+.pb-seg {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 12px; letter-spacing: 0.5px;
+  cursor: default; transition: filter 0.2s;
+  padding: 0 10px; text-align: center; line-height: 1.2;
+  min-width: 60px;
+}
+.pb-seg:hover { filter: brightness(1.15); }
+.pb-seg .seg-label { font-size: 11px; opacity: 0.85; }
+.pb-seg .seg-count { font-size: 15px; font-weight: 800; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--sub);
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* GROUP SECTIONS */
+.groups-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.group-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.group-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.gh-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.gh-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.gh-count {
+  background: rgba(255,255,255,0.08);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700;
+  padding: 1px 9px; border-radius: 20px; color: var(--sub);
+}
+.gh-total {
+  margin-left: auto;
+  text-align: right;
+}
+.gh-total .tl { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+.gh-total .tv {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800;
+}
+
+/* LEAD ROWS */
+.lead-row {
+  display: flex; align-items: flex-start;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(30,50,72,0.6);
+  gap: 12px;
+  transition: background 0.15s;
+}
+.lead-row:hover { background: rgba(255,255,255,0.02); }
+.lead-row:last-child { border-bottom: none; }
+.lr-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  min-width: 22px; padding-top: 1px;
+}
+.lr-body { flex: 1; }
+.lr-name {
+  font-weight: 600; font-size: 13.5px; color: var(--text); line-height: 1.2;
+}
+.lr-meta { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.lr-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 3px;
+}
+.t-google  { background: rgba(66,133,244,0.15); color: #7ab4f5; }
+.t-gmb     { background: rgba(52,168,83,0.15);  color: #6ee7a0; }
+.t-direct  { background: rgba(100,116,139,0.15);color: #94a3b8; }
+.t-bing    { background: rgba(0,174,239,0.15);  color: #67d8f5; }
+.t-fb      { background: rgba(59,89,152,0.2);   color: #8faadc; }
+.t-phone   { background: rgba(59,130,246,0.12); color: #7ab8f5; }
+.t-form    { background: rgba(139,92,246,0.12); color: #c4a8f5; }
+.t-text    { background: rgba(34,197,94,0.12);  color: #6ee7b7; }
+.t-warn    { background: rgba(239,68,68,0.12);  color: #fca5a5; }
+.t-info    { background: rgba(249,178,51,0.12); color: #fcd34d; }
+.lr-right { text-align: right; flex-shrink: 0; }
+.lr-qval {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px; font-weight: 800; line-height: 1;
+}
+.lr-qlabel { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.lr-note { font-size: 11px; color: var(--sub); margin-top: 3px; font-style: italic; }
+
+.warn-text { color: #fb923c; font-weight: 600; }
+.ok-text { color: #4ade80; font-weight: 600; }
+.hl-text { color: var(--yellow); font-weight: 600; }
+
+/* FOOTER */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: var(--muted); letter-spacing: 1px;
+}
+.footer a { color: var(--orange); text-decoration: none; }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.scard { animation: fadeUp 0.4s ease both; }
+.scard:nth-child(1) { animation-delay: 0.05s; }
+.scard:nth-child(2) { animation-delay: 0.10s; }
+.scard:nth-child(3) { animation-delay: 0.15s; }
+.scard:nth-child(4) { animation-delay: 0.20s; }
+.group-card { animation: fadeUp 0.4s ease both; }
+
+@media (max-width: 900px) {
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .groups-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <svg width="40" height="46" viewBox="0 0 40 46" fill="none">
+    <path d="M20 2C14 10 7 14 10 23C12 28 9 30 9 30C12 25 17 27 15 33C17 28 24 26 22 34C25 27 28 24 27 18C32 23 30 29 28 33C30 27 37 22 32 14C28 8 24 5 20 2Z" fill="url(#hfg)"/>
+    <defs><linearGradient id="hfg" x1="20" y1="2" x2="20" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f9b233"/><stop offset="55%" stop-color="#f5821f"/><stop offset="100%" stop-color="#d63418"/>
+    </linearGradient></defs>
+  </svg>
+  <div class="htext">
+    <h1>RNC <span>Mechanical</span></h1>
+    <p>Plumbing &amp; HVAC · Seekonk, MA</p>
+  </div>
+  <div class="hright">
+    <div class="rtitle">Quotable Lead Report</div>
+    <div class="rdate">April &amp; May 2026 · Generated June 2, 2026</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="month-tabs">
+  <div class="tab active" onclick="switchTab('may')">May 2026 <span style="color:var(--muted);font-size:11px;margin-left:6px;">13 leads</span></div>
+  <div class="tab" onclick="switchTab('apr')">April 2026 <span style="color:var(--muted);font-size:11px;margin-left:6px;">8 leads</span></div>
+</div>
+
+<!-- ===================== MAY ===================== -->
+<div id="panel-may" class="month-panel active">
+<div class="main">
+
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+    <div class="scard" style="--sc-color:var(--orange)">
+      <div class="sc-label">Total Quote Value</div>
+      <div class="sc-val">$21,850</div>
+      <div class="sc-sub">Across 5 estimated leads</div>
+      <div class="sc-badge" style="--sc-badge-bg:rgba(245,130,31,0.15);--sc-badge-color:#f5821f;">+ TBD on 2 leads</div>
+    </div>
+    <div class="scard" style="--sc-color:var(--green)">
+      <div class="sc-label">Total Sales Closed</div>
+      <div class="sc-val">$1,050</div>
+      <div class="sc-sub">1 job converted</div>
+      <div class="sc-badge">Collected</div>
+    </div>
+    <div class="scard" style="--sc-color:var(--yellow)">
+      <div class="sc-label">Pipeline Opportunity</div>
+      <div class="sc-val">$20,800</div>
+      <div class="sc-sub">Revenue still in pipeline</div>
+      <div class="sc-badge" style="--sc-badge-bg:rgba(234,179,8,0.12);--sc-badge-color:#fbbf24;">Awaiting conversion</div>
+    </div>
+    <div class="scard" style="--sc-color:var(--yellow)">
+      <div class="sc-label">Quotable Leads</div>
+      <div class="sc-val">11</div>
+      <div class="sc-sub">Marked quotable in system</div>
+      <div class="sc-badge" style="--sc-badge-bg:rgba(239,68,68,0.12);--sc-badge-color:#f87171;">3 not in HCP</div>
+    </div>
+  </div>
+
+  <!-- PIPELINE BAR -->
+  <div class="pipeline-section">
+    <h2>Pipeline Breakdown by Status</h2>
+    <div class="pipeline-bar">
+      <div class="pb-seg" style="background:var(--c-awaiting);flex:3"><span class="seg-label">Awaiting Approval</span><span class="seg-count">3</span></div>
+      <div class="pb-seg" style="background:var(--c-done);flex:1"><span class="seg-label">Est. Done</span><span class="seg-count">1</span></div>
+      <div class="pb-seg" style="background:var(--c-scheduled);flex:1"><span class="seg-label">Scheduled</span><span class="seg-count">1</span></div>
+      <div class="pb-seg" style="background:var(--c-unscheduled);flex:1"><span class="seg-label">Needs Sched.</span><span class="seg-count">1</span></div>
+      <div class="pb-seg" style="background:var(--c-inhcp);flex:1"><span class="seg-label">In HCP</span><span class="seg-count">1</span></div>
+      <div class="pb-seg" style="background:var(--c-nothcp);flex:3"><span class="seg-label">Not in HCP</span><span class="seg-count">3</span></div>
+      <div class="pb-seg" style="background:var(--c-won);flex:1"><span class="seg-label">Won / Paid</span><span class="seg-count">1</span></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-awaiting)"></div>Awaiting Approval</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-done)"></div>Estimate Done</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-scheduled)"></div>Scheduled</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-unscheduled)"></div>Needs Scheduling</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-inhcp)"></div>In HCP – No Pipeline</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-nothcp)"></div>Not in HCP</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-won)"></div>Won / Closed</div>
+    </div>
+  </div>
+
+  <!-- GROUP CARDS -->
+  <div class="groups-grid">
+
+    <!-- WON -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-won)"></div>
+        <div class="gh-title" style="color:var(--c-won)">Won / Closed</div>
+        <div class="gh-count">1</div>
+        <div class="gh-total">
+          <div class="tl">Sales Value</div>
+          <div class="tv" style="color:var(--c-won)">$1,050</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Brian Murphy</div>
+          <div class="lr-meta">Pipeline: Job · May 25, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-phone">Phone</span></div>
+          <div class="lr-note"><span class="ok-text">Job completed and paid.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-won)">$1,050</div>
+          <div class="lr-qlabel">Collected</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AWAITING APPROVAL -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-awaiting)"></div>
+        <div class="gh-title" style="color:var(--c-awaiting)">Awaiting Approval</div>
+        <div class="gh-count">3</div>
+        <div class="gh-total">
+          <div class="tl">Total Quote</div>
+          <div class="tv" style="color:var(--c-awaiting)">$18,100</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Sandra Sneesby</div>
+          <div class="lr-meta">Pipeline: Estimate · May 15, 2026</div>
+          <div class="lr-tags"><span class="tag t-google">Google</span><span class="tag t-phone">Phone</span></div>
+          <div class="lr-note"><span class="hl-text">Highest value estimate this period.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-awaiting)">$14,750</div>
+          <div class="lr-qlabel">Quote</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#2</div>
+        <div class="lr-body">
+          <div class="lr-name">Sue Mattson</div>
+          <div class="lr-meta">Pipeline: Estimate · May 14, 2026</div>
+          <div class="lr-tags"><span class="tag t-google">Google</span><span class="tag t-phone">Phone</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-awaiting)">$2,800</div>
+          <div class="lr-qlabel">Quote</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#3</div>
+        <div class="lr-body">
+          <div class="lr-name">Mark Berube</div>
+          <div class="lr-meta">Pipeline: Estimate · May 5, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-form">Form</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-awaiting)">$550</div>
+          <div class="lr-qlabel">Quote</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTIMATE DONE -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-done)"></div>
+        <div class="gh-title" style="color:var(--c-done)">Estimate Done — No Amount</div>
+        <div class="gh-count">1</div>
+        <div class="gh-total">
+          <div class="tl">Total Quote</div>
+          <div class="tv" style="color:var(--muted)">TBD</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Jay Mimoso</div>
+          <div class="lr-meta">Pipeline: Estimate · May 29, 2026</div>
+          <div class="lr-tags"><span class="tag t-bing">Bing Organic</span><span class="tag t-phone">Phone</span></div>
+          <div class="lr-note"><span class="warn-text">Estimate visit done. No amount entered in HCP yet.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--muted)">TBD</div>
+          <div class="lr-qlabel">Quote</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULED -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-scheduled)"></div>
+        <div class="gh-title" style="color:var(--c-scheduled)">Job — Scheduled</div>
+        <div class="gh-count">1</div>
+        <div class="gh-total">
+          <div class="tl">Total Quote</div>
+          <div class="tv" style="color:var(--c-scheduled)">$2,700</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Jim Pereira</div>
+          <div class="lr-meta">Pipeline: Job · May 9, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-form">Form</span></div>
+          <div class="lr-note"><span class="hl-text">Job scheduled for June 9, 2026.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-scheduled)">$2,700</div>
+          <div class="lr-qlabel">Approved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEEDS SCHEDULING -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-unscheduled)"></div>
+        <div class="gh-title" style="color:#94a3b8">Job — Needs Scheduling</div>
+        <div class="gh-count">1</div>
+        <div class="gh-total">
+          <div class="tl">Approved</div>
+          <div class="tv" style="color:var(--muted)">$0.00</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Andy Saitas</div>
+          <div class="lr-meta">Pipeline: Job · May 27, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-phone">Phone</span></div>
+          <div class="lr-note">Visit #1 done. Estimate pro-approved. <span class="warn-text">Not yet scheduled.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--muted)">$0.00</div>
+          <div class="lr-qlabel">Est. Value</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IN HCP NO PIPELINE -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-inhcp)"></div>
+        <div class="gh-title" style="color:var(--c-inhcp)">In HCP — No Pipeline Assigned</div>
+        <div class="gh-count">1</div>
+        <div class="gh-total">
+          <div class="tl">Value</div>
+          <div class="tv" style="color:var(--muted)">—</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Leslie Hirst</div>
+          <div class="lr-meta">May 27, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-phone">Phone</span></div>
+          <div class="lr-note">Talked to Abbie — estimate visit done. <span class="warn-text">No pipeline assigned yet.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--muted)">—</div>
+          <div class="lr-qlabel">Unknown</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOT IN HCP MAY -->
+    <div class="group-card" style="grid-column: span 2;">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--red)"></div>
+        <div class="gh-title" style="color:var(--red)">Not in HCP — Follow-Up Unknown</div>
+        <div class="gh-count">3</div>
+        <div class="gh-total">
+          <div class="tl">Value</div>
+          <div class="tv" style="color:var(--muted)">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;">
+        <div class="lead-row" style="border-right:1px solid var(--border);">
+          <div class="lr-num">#1</div>
+          <div class="lr-body">
+            <div class="lr-name">Unnamed Caller</div>
+            <div class="lr-meta">May 27, 2026</div>
+            <div class="lr-tags"><span class="tag t-google">Google</span><span class="tag t-phone">Phone</span></div>
+            <div class="lr-note"><span class="warn-text">Agreed to send pictures. No updates. Not in HCP.</span></div>
+          </div>
+        </div>
+        <div class="lead-row">
+          <div class="lr-num">#2</div>
+          <div class="lr-body">
+            <div class="lr-name">Andy (painting co.)</div>
+            <div class="lr-meta">May 20, 2026</div>
+            <div class="lr-tags"><span class="tag t-direct">ChatGPT</span><span class="tag t-phone">Phone</span></div>
+            <div class="lr-note"><span class="warn-text">High school plumbing job. Agreed to email details. Not in HCP.</span></div>
+          </div>
+        </div>
+        <div class="lead-row" style="border-right:1px solid var(--border);border-bottom:none;">
+          <div class="lr-num">#3</div>
+          <div class="lr-body">
+            <div class="lr-name">Jesuino Beverly</div>
+            <div class="lr-meta">May 6, 2026</div>
+            <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-text">Text</span></div>
+            <div class="lr-note"><span class="warn-text">Called then texted. Not in HCP. Any follow-up?</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end groups-grid -->
+</div><!-- end main -->
+</div><!-- end panel-may -->
+
+
+<!-- ===================== APRIL ===================== -->
+<div id="panel-apr" class="month-panel">
+<div class="main">
+
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+    <div class="scard" style="--sc-color:var(--orange)">
+      <div class="sc-label">Total Quote Value</div>
+      <div class="sc-val">$10,085</div>
+      <div class="sc-sub">Across 4 estimated leads</div>
+    </div>
+    <div class="scard" style="--sc-color:var(--green)">
+      <div class="sc-label">Total Sales Closed</div>
+      <div class="sc-val">$9,750</div>
+      <div class="sc-sub">3 jobs converted</div>
+      <div class="sc-badge">Collected</div>
+    </div>
+    <div class="scard" style="--sc-color:var(--yellow)">
+      <div class="sc-label">Pipeline Opportunity</div>
+      <div class="sc-val">$685</div>
+      <div class="sc-sub">Revenue still in pipeline</div>
+      <div class="sc-badge" style="--sc-badge-bg:rgba(234,179,8,0.12);--sc-badge-color:#fbbf24;">Awaiting conversion</div>
+    </div>
+    <div class="scard" style="--sc-color:var(--yellow)">
+      <div class="sc-label">Quotable Leads</div>
+      <div class="sc-val">8</div>
+      <div class="sc-sub">Marked quotable in system</div>
+      <div class="sc-badge" style="--sc-badge-bg:rgba(239,68,68,0.12);--sc-badge-color:#f87171;">3 not in HCP</div>
+    </div>
+  </div>
+
+  <!-- PIPELINE BAR -->
+  <div class="pipeline-section">
+    <h2>Pipeline Breakdown by Status</h2>
+    <div class="pipeline-bar">
+      <div class="pb-seg" style="background:var(--c-scheduled);flex:1"><span class="seg-label">Scheduled</span><span class="seg-count">1</span></div>
+      <div class="pb-seg" style="background:var(--c-nothcp);flex:3"><span class="seg-label">Not in HCP</span><span class="seg-count">3</span></div>
+      <div class="pb-seg" style="background:var(--c-won);flex:3"><span class="seg-label">Won / Paid</span><span class="seg-count">3</span></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-scheduled)"></div>Scheduled</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-nothcp)"></div>Not in HCP</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-won)"></div>Won / Closed</div>
+    </div>
+  </div>
+
+  <!-- GROUP CARDS -->
+  <div class="groups-grid">
+
+    <!-- WON APRIL -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-won)"></div>
+        <div class="gh-title" style="color:var(--c-won)">Won / Closed</div>
+        <div class="gh-count">3</div>
+        <div class="gh-total">
+          <div class="tl">Sales Value</div>
+          <div class="tv" style="color:var(--c-won)">$9,750</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Mary Keller</div>
+          <div class="lr-meta">Pipeline: Job · Apr 19, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-phone">Phone</span></div>
+          <div class="lr-note"><span class="ok-text">Job completed and paid.</span> Quote was $4,200.</div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-won)">$4,250</div>
+          <div class="lr-qlabel">Collected</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#2</div>
+        <div class="lr-body">
+          <div class="lr-name">Jennifer Raposo</div>
+          <div class="lr-meta">Pipeline: Job · Apr 13, 2026</div>
+          <div class="lr-tags"><span class="tag t-direct">Yahoo</span><span class="tag t-text">Text</span></div>
+          <div class="lr-note"><span class="ok-text">Job completed and paid.</span> Quote was $2,000.</div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-won)">$2,300</div>
+          <div class="lr-qlabel">Collected</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#3</div>
+        <div class="lr-body">
+          <div class="lr-name">Chris Bacon</div>
+          <div class="lr-meta">Pipeline: Job · Apr 4, 2026</div>
+          <div class="lr-tags"><span class="tag t-google">Google</span><span class="tag t-text">Text</span></div>
+          <div class="lr-note"><span class="ok-text">Job completed and paid.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-won)">$3,200</div>
+          <div class="lr-qlabel">Collected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULED APRIL -->
+    <div class="group-card">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--c-scheduled)"></div>
+        <div class="gh-title" style="color:var(--c-scheduled)">Job — Scheduled</div>
+        <div class="gh-count">1</div>
+        <div class="gh-total">
+          <div class="tl">Total Quote</div>
+          <div class="tv" style="color:var(--c-scheduled)">$685</div>
+        </div>
+      </div>
+      <div class="lead-row">
+        <div class="lr-num">#1</div>
+        <div class="lr-body">
+          <div class="lr-name">Albert Braz Jr</div>
+          <div class="lr-meta">Pipeline: Job · Apr 18, 2026</div>
+          <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-form">Form</span></div>
+          <div class="lr-note"><span class="hl-text">Job scheduled for June 4, 2026.</span></div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-qval" style="color:var(--c-scheduled)">$685</div>
+          <div class="lr-qlabel">Approved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOT IN HCP APRIL -->
+    <div class="group-card" style="grid-column: span 2;">
+      <div class="group-card-header">
+        <div class="gh-dot" style="background:var(--red)"></div>
+        <div class="gh-title" style="color:var(--red)">Not in HCP — Follow-Up Unknown</div>
+        <div class="gh-count">4</div>
+        <div class="gh-total">
+          <div class="tl">Value</div>
+          <div class="tv" style="color:var(--muted)">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;">
+        <div class="lead-row" style="border-right:1px solid var(--border);">
+          <div class="lr-num">#1</div>
+          <div class="lr-body">
+            <div class="lr-name">Paul Skorohod</div>
+            <div class="lr-meta">Apr 27, 2026</div>
+            <div class="lr-tags"><span class="tag t-google">Google</span><span class="tag t-phone">Phone</span></div>
+            <div class="lr-note"><span class="warn-text">Left a VM. Not in HCP at all. Any follow-up?</span></div>
+          </div>
+        </div>
+        <div class="lead-row">
+          <div class="lr-num">#2</div>
+          <div class="lr-body">
+            <div class="lr-name">Chris Pike</div>
+            <div class="lr-meta">Apr 20, 2026</div>
+            <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-phone">Phone</span></div>
+            <div class="lr-note"><span class="warn-text">Left a VM. Not in HCP at all. Any follow-up?</span></div>
+          </div>
+        </div>
+        <div class="lead-row" style="border-right:1px solid var(--border);border-bottom:none;">
+          <div class="lr-num">#3</div>
+          <div class="lr-body">
+            <div class="lr-name">Frank Andrews Jr</div>
+            <div class="lr-meta">Apr 13, 2026</div>
+            <div class="lr-tags"><span class="tag t-gmb">GMB</span><span class="tag t-form">Form</span></div>
+            <div class="lr-note"><span class="warn-text">Not in HCP at all. Any follow-up?</span></div>
+          </div>
+        </div>
+        <div class="lead-row" style="border-bottom:none;">
+          <div class="lr-num">#4</div>
+          <div class="lr-body">
+            <div class="lr-name">Raheem Nicks</div>
+            <div class="lr-meta">Apr 2, 2026</div>
+            <div class="lr-tags"><span class="tag t-google">Google</span><span class="tag t-form">Form</span></div>
+            <div class="lr-note"><span class="warn-text">Not in HCP at all. Any follow-up?</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end groups-grid -->
+</div><!-- end main -->
+</div><!-- end panel-apr -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>RNC Mechanical LLC · Seekonk, MA · <a href="tel:7817256603">781-725-6603</a> · <a href="mailto:rncmech@outlook.com">rncmech@outlook.com</a></span>
+  <span>Quotable Lead Report · April &amp; May 2026 · Confidential</span>
+</div>
+
+<script>
+function switchTab(month) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.month-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + month).classList.add('active');
+  event.target.closest('.tab').classList.add('active');
+}
+</script>
+</body>
+</html>
